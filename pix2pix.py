@@ -397,6 +397,14 @@ def create_generator(generator_inputs, generator_outputs_channels):
 
 
 def create_model(inputs, targets):
+
+    global_step = tf.contrib.framework.get_or_create_global_step()
+    incr_global_step = tf.assign(global_step, global_step+1)
+    if global_step % 2 == 0:
+        temp = inputs
+        inputs = targets
+        targets = temp
+
     def create_discriminator(discrim_inputs, discrim_targets):
         n_layers = 3
         layers = []
@@ -475,8 +483,7 @@ def create_model(inputs, targets):
     ema = tf.train.ExponentialMovingAverage(decay=0.99)
     update_losses = ema.apply([discrim_loss, gen_loss_GAN, gen_loss_L1])
 
-    global_step = tf.contrib.framework.get_or_create_global_step()
-    incr_global_step = tf.assign(global_step, global_step+1)
+
 
     return Model(
         predict_real=predict_real,
